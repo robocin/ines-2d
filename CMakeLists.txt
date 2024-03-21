@@ -6,6 +6,6 @@ set(CMAKE_CXX_FLAGS "-pthread")
 
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
-set( SOURCE_FILES src/main.cpp)
+set( SOURCE_FILES src/main.cpp src/machines/kicker_stm.cpp)
 
 add_executable( test ${SOURCE_FILES} )
