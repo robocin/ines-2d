@@ -1,5 +1,6 @@
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/event.hpp>
+#include <boost/statechart/result.hpp>
 #include <boost/statechart/simple_state.hpp>
 #include <boost/statechart/state.hpp>
 #include <boost/statechart/state_machine.hpp>
@@ -10,15 +11,14 @@
 
 namespace sc = boost::statechart;
 
-struct transition : sc::event<transition> {};
+struct transitionKicker : sc::event<transitionKicker> {};
 
 struct Kicker;
-struct updateWorldModel;
+struct updateWorldModelKicker;
 struct goToBall;
 struct shoot;
 struct dribble;
-
-struct Kicker : sc::state_machine<Kicker, updateWorldModel> {
+struct Kicker : sc::state_machine<Kicker, updateWorldModelKicker> {
  public:
   Kicker() = default;
   ~Kicker() override = default;
@@ -39,19 +39,19 @@ struct Kicker : sc::state_machine<Kicker, updateWorldModel> {
   bool updatedWorldModel_{true};
 };
 
-struct updateWorldModel : sc::state<updateWorldModel, Kicker> {
+struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
  public:
-  using reactions = sc::custom_reaction<transition>;
+  using reactions = sc::custom_reaction<transitionKicker>;
 
-  explicit updateWorldModel(my_context ctx) : my_base(ctx) {
+  explicit updateWorldModelKicker(my_context ctx) : my_base(ctx) {
     std::cout << "Updating the world model!\n";
   }
 
-  ~updateWorldModel() override { std::cout << "World model updated\n"; }
+  ~updateWorldModelKicker() override { std::cout << "World model updated\n"; }
 
-  sc::result react(const transition& /*unused*/) {
+  sc::result react(const transitionKicker& /*unused*/) {
     if (!context<Kicker>().getUpdatedWorldModel()) {
-      return transit<updateWorldModel>();
+      return transit<updateWorldModelKicker>();
     }
     return transit<goToBall>();
   }
@@ -60,30 +60,30 @@ struct updateWorldModel : sc::state<updateWorldModel, Kicker> {
 
 struct goToBall : sc::state<goToBall, Kicker> {
  public:
-  using reactions = sc::custom_reaction<transition>;
+  using reactions = sc::custom_reaction<transitionKicker>;
 
   explicit goToBall(my_context ctx) : my_base(ctx) { std::cout << "Going to ball position!\n"; }
 
   ~goToBall() override { std::cout << "Quitting go to ball\n"; }
 
-  sc::result react(const transition& /*unused*/) {
+  sc::result react(const transitionKicker& /*unused*/) {
     if (context<Kicker>().getKickable() == 1) {
       return transit<shoot>();
     }
-    return transit<updateWorldModel>();
+    return transit<updateWorldModelKicker>();
   }
 };
 
 struct shoot : sc::state<shoot, Kicker> {
-  using reactions = sc::custom_reaction<transition>;
+  using reactions = sc::custom_reaction<transitionKicker>;
 
   explicit shoot(my_context ctx) : my_base(ctx) { std::cout << "Entering shoot!\n"; }
 
   ~shoot() override { std::cout << "Quitting shoot\n"; }
 
-  sc::result react(const transition& /*unused*/) {
+  sc::result react(const transitionKicker& /*unused*/) {
     if (context<Kicker>().getCanShoot()) {
-      return transit<updateWorldModel>();
+      return transit<updateWorldModelKicker>();
     }
     return transit<dribble>();
   }
@@ -91,11 +91,11 @@ struct shoot : sc::state<shoot, Kicker> {
 };
 
 struct dribble : sc::state<dribble, Kicker> {
-  using reactions = sc::custom_reaction<transition>;
+  using reactions = sc::custom_reaction<transitionKicker>;
 
   explicit dribble(my_context ctx) : my_base(ctx) { std::cout << "Entering dribble!\n"; }
 
   ~dribble() override { std::cout << "Quitting dribble\n"; }
 
-  sc::result react(const transition& /*unused*/) { return transit<updateWorldModel>(); }
+  sc::result react(const transitionKicker& /*unused*/) { return transit<updateWorldModelKicker>(); }
 };
