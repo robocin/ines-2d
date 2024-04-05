@@ -14,11 +14,12 @@ namespace sc = boost::statechart;
 struct transitionKicker : sc::event<transitionKicker> {};
 
 struct Kicker;
+struct initialStateKicker;
 struct updateWorldModelKicker;
 struct goToBall;
 struct shoot;
 struct dribble;
-struct Kicker : sc::state_machine<Kicker, updateWorldModelKicker> {
+struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
  public:
   Kicker() = default;
   ~Kicker() override = default;
@@ -37,6 +38,21 @@ struct Kicker : sc::state_machine<Kicker, updateWorldModelKicker> {
   int kickable_{1};
   bool canShoot_{true};
   bool updatedWorldModel_{true};
+};
+
+struct initialStateKicker : sc::state<initialStateKicker, Kicker> {
+  public:
+    using reactions = sc::custom_reaction<transitionKicker>;
+
+    explicit initialStateKicker(my_context ctx) : my_base(ctx) {
+      std::cout << "Updating the world model!\n";
+    }
+
+    ~initialStateKicker() override { std::cout << "World model updated\n"; }
+
+    sc::result react(const transitionKicker& /*unused*/) {
+      return transit<updateWorldModelKicker>();
+    }
 };
 
 struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {

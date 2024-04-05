@@ -14,13 +14,14 @@ namespace sc = boost::statechart;
 struct transitionGoalie : sc::event<transitionGoalie> {};
 
 struct Goalie;
+struct initialStateGoalie;
 struct updateWorldModelGoalie;
 struct doCatch;
 struct clearBall;
 struct doTackle;
 struct bodyIntercept;
 
-struct Goalie : sc::state_machine<Goalie, updateWorldModelGoalie> {
+struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
  public:
   Goalie() = default;
   ~Goalie() override = default;
@@ -48,6 +49,21 @@ struct Goalie : sc::state_machine<Goalie, updateWorldModelGoalie> {
   bool kickable_{true};
   bool tacklePossible_{true};
   bool bodyInterceptAct_{true};
+};
+
+struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
+  public:
+    using reactions = sc::custom_reaction<transitionGoalie>;
+
+    explicit initialStateGoalie(my_context ctx) : my_base(ctx) {
+      std::cout << "Updating the world model!\n";
+    }
+
+    ~initialStateGoalie() override { std::cout << "World model updated\n"; }
+
+    sc::result react(const transitionGoalie& /*unused*/) {
+      return transit<updateWorldModelGoalie>();
+    }
 };
 
 struct updateWorldModelGoalie : sc::state<updateWorldModelGoalie, Goalie> {
