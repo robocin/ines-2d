@@ -1,3 +1,6 @@
+#include "goalie_stm_entry_points.h"
+#include "goalie_stm_transitions.h"
+
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/statechart/event.hpp>
 #include <boost/statechart/result.hpp>
@@ -40,6 +43,8 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   bool& getTacklePossible() { return tacklePossible_; }
   [[nodiscard]] bool getBodyInterceptAct() const { return bodyInterceptAct_; }
   bool& getBodyInterceptAct() { return bodyInterceptAct_; }
+  [[nodiscard]] double getBlockPoint() const { return blockPoint_; }
+  double& getBlockPoint() { return blockPoint_; }
 
  private:
   int worldModel_{1};
@@ -49,21 +54,20 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   bool kickable_{true};
   bool tacklePossible_{true};
   bool bodyInterceptAct_{true};
+  double blockPoint_{2.0};
 };
 
 struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
-  public:
-    using reactions = sc::custom_reaction<transitionGoalie>;
+ public:
+  using reactions = sc::custom_reaction<transitionGoalie>;
 
-    explicit initialStateGoalie(my_context ctx) : my_base(ctx) {
-      std::cout << "Updating the world model!\n";
-    }
+  explicit initialStateGoalie(my_context ctx) : my_base(ctx) {
+    std::cout << "Updating the world model!\n";
+  }
 
-    ~initialStateGoalie() override { std::cout << "World model updated\n"; }
+  ~initialStateGoalie() override { std::cout << "World model updated\n"; }
 
-    sc::result react(const transitionGoalie& /*unused*/) {
-      return transit<updateWorldModelGoalie>();
-    }
+  sc::result react(const transitionGoalie& /*unused*/) { return transit<updateWorldModelGoalie>(); }
 };
 
 struct updateWorldModelGoalie : sc::state<updateWorldModelGoalie, Goalie> {
@@ -88,12 +92,16 @@ struct doCatch : sc::state<doCatch, Goalie> {
  public:
   using reactions = sc::custom_reaction<transitionGoalie>;
 
-  explicit doCatch(my_context ctx) : my_base(ctx) { std::cout << "Going to catch\n"; }
+  explicit doCatch(my_context ctx) : my_base(ctx) {
+    std::cout << "Going to catch\n";
+    context<Goalie>().getInsideGoalieArea() = goalieStm::isInOurPenaltyArea(/*ballPos=*/0.0);
+  }
 
   ~doCatch() override { std::cout << "Quitting catch state\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
     if (context<Goalie>().getCatchable() && context<Goalie>().getInsideGoalieArea()) {
+      goalieStm::doCatch();
       return transit<updateWorldModelGoalie>();
     }
     return transit<clearBall>();
@@ -110,6 +118,7 @@ struct clearBall : sc::state<clearBall, Goalie> {
 
   sc::result react(const transitionGoalie& /*unused*/) {
     if (context<Goalie>().getKickable()) {
+      goalieStm::doClearBall();
       return transit<updateWorldModelGoalie>();
     }
     return transit<doTackle>();
@@ -120,12 +129,16 @@ struct doTackle : sc::state<doTackle, Goalie> {
  public:
   using reactions = sc::custom_reaction<transitionGoalie>;
 
-  explicit doTackle(my_context ctx) : my_base(ctx) { std::cout << "Entering do tackle state\n"; }
+  explicit doTackle(my_context ctx) : my_base(ctx) {
+    std::cout << "Entering do tackle state\n";
+    context<Goalie>().getTacklePossible() = goalieStm::isTacklePossible(/*tackleProbability=*/0.3);
+  }
 
   ~doTackle() override { std::cout << "Quitting do tackle\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
     if (context<Goalie>().getTacklePossible()) {
+      goalieStm::doTackle();
       return transit<updateWorldModelGoalie>();
     }
     return transit<bodyIntercept>();
@@ -138,9 +151,19 @@ struct bodyIntercept : sc::state<bodyIntercept, Goalie> {
 
   explicit bodyIntercept(my_context ctx) : my_base(ctx) {
     std::cout << "Entering body intercept\n";
+    context<Goalie>().getBodyInterceptAct() = goalieStm::checkBody(/*ball=*/0.0);
+    context<Goalie>().getBlockPoint()
+        = goalieStm::calculateBlockPoint(/*ball=*/1.0, /*ballPos=*/1.0);
   }
 
   ~bodyIntercept() override { std::cout << "Quitting body intercept\n"; }
 
-  sc::result react(const transitionGoalie& /*unused*/) { return transit<updateWorldModelGoalie>(); }
+  sc::result react(const transitionGoalie& /*unused*/) {
+    if (context<Goalie>().getBodyInterceptAct()) {
+      goalieStm::doBodyIntercept();
+    } else {
+      goalieStm::doMove(context<Goalie>().getBlockPoint());
+    }
+    return transit<updateWorldModelGoalie>();
+  }
 };
