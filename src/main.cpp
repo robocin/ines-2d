@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 void triggerKicker(Kicker& machine) {
-  constexpr int ktransitions = 20;
+  constexpr int ktransitions = 5;
 
   for (int i = 0; i < ktransitions; i++) {
     machine.process_event(transitionKicker());
@@ -13,7 +13,7 @@ void triggerKicker(Kicker& machine) {
 }
 
 void triggerGoalie(Goalie& machine) {
-  constexpr int ktransitions = 20;
+  constexpr int ktransitions = 5;
 
   for (int i = 0; i < ktransitions; i++) {
     machine.process_event(transitionGoalie());
