@@ -58,10 +58,10 @@ struct initialStateKicker : sc::state<initialStateKicker, Kicker> {
   using reactions = sc::custom_reaction<transitionKicker>;
 
   explicit initialStateKicker(my_context ctx) : my_base(ctx) {
-    std::cout << "Updating the world model!\n";
+    std::cout << "Updating the kicker world model!\n";
   }
 
-  ~initialStateKicker() override { std::cout << "World model updated\n"; }
+  ~initialStateKicker() override { std::cout << "Kicker World model updated\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) { return transit<updateWorldModelKicker>(); }
 };

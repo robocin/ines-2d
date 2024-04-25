@@ -1,30 +1,28 @@
 #include "machines/goalie/goalie_stm.h"
-#include "machines/kicker/kicker_stm.h"
+// #include "machines/kicker/kicker_stm.h"
 
 #include <thread>
 #include <unistd.h>
 
 void triggerKicker(Kicker& machine) {
-  constexpr int ktransitions = 5;
-
-  for (int i = 0; i < ktransitions; i++) {
+  while(!machine.terminated()) {
     machine.process_event(transitionKicker());
   }
+  std::cout << "Terminate kicker machine\n";
 }
 
 void triggerGoalie(Goalie& machine) {
-  constexpr int ktransitions = 5;
-
-  for (int i = 0; i < ktransitions; i++) {
+  while(!machine.terminated()) {
     machine.process_event(transitionGoalie());
   }
+  std::cout << "Terminate goalie machine\n";
 }
 
 int main() {
-  Kicker machineKicker;
+  /*Kicker machineKicker;
   machineKicker.initiate();
   std::thread triggerEventKicker(triggerKicker, std::ref(machineKicker));
-  triggerEventKicker.join();
+  triggerEventKicker.join();*/
 
   Goalie machineGoalie;
   machineGoalie.initiate();
