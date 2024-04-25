@@ -22,6 +22,7 @@ struct doCatch;
 struct clearBall;
 struct doTackle;
 struct bodyIntercept;
+struct finalStateGoalie;
 
 struct j1Goalie;
 struct j2Goalie;
@@ -108,9 +109,24 @@ struct j1Goalie : sc::state<j1Goalie, Goalie> {
     if (context<Goalie>().getGamemode() == 1) {
       return transit<doCatch>();
     }
-    return transit<doCatch>();
-    // return transit<finalState>(); add final state
+    return transit<finalStateGoalie>();
   }
+};
+
+struct finalStateGoalie : sc::state<finalStateGoalie, Goalie> {
+  public:
+    using reactions = sc::custom_reaction<transitionGoalie>;
+    explicit finalStateGoalie(my_context ctx) : my_base(ctx) {
+      std::cout << "Entering final state\n";
+    }
+
+    ~finalStateGoalie() override {
+      std::cout << "Ending goalie machine\n";
+    }
+
+    sc::result react(const transitionGoalie& /*unused*/) {
+      return terminate();
+    }
 };
 
 struct doCatch : sc::state<doCatch, Goalie> {

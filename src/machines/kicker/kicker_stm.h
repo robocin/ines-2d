@@ -22,6 +22,7 @@ struct updateWorldModelKicker;
 struct goToBall;
 struct shoot;
 struct dribble;
+struct finalStateKicker;
 
 struct j1Kicker;
 struct j2Kicker;
@@ -93,8 +94,20 @@ struct j1Kicker : sc::state<j1Kicker, Kicker> {
     if (context<Kicker>().getGamemode() == 1) {
       return transit<goToBall>();
     }
-    return transit<goToBall>();
-    // return transit<finalState>(); add final state
+    return transit<finalStateKicker>();
+  }
+};
+
+struct finalStateKicker : sc::state<finalStateKicker, Kicker> {
+ public:
+  using reactions = sc::custom_reaction<transitionKicker>;
+
+  explicit finalStateKicker(my_context ctx) : my_base(ctx) { std::cout << "Entering kicker final state\n"; }
+
+  ~finalStateKicker() override { std::cout << "Finishing kicker machine\n"; }
+
+  sc::result react(const transitionKicker& /*unused*/) { 
+    return terminate();
   }
 };
 
