@@ -242,9 +242,12 @@ struct j5Goalie : sc::state<j5Goalie, Goalie> {
   sc::result react(const transitionGoalie& /*unused*/) {
     if (context<Goalie>().getBodyInterceptAct()) {
       goalieStm::doBodyIntercept();
-    } else {
+    } 
+
+    if(!context<Goalie>().getBodyInterceptAct()) {
       goalieStm::doMove(context<Goalie>().getBlockPoint());
     }
+  
     return transit<j6Goalie>();
   }
 };
