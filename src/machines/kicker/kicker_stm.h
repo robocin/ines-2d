@@ -77,10 +77,11 @@ struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
   ~updateWorldModelKicker() override { std::cout << "World model updated\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) {
-    if (!context<Kicker>().getUpdatedWorldModel()) {
-      return transit<updateWorldModelKicker>();
+    switch (static_cast<int>(context<Kicker>().getUpdatedWorldModel())) {
+      case 0: return transit<updateWorldModelKicker>();
+      case 1: return transit<j1Kicker>();
+      default: return transit<updateWorldModelKicker>();
     }
-    return transit<j1Kicker>();
   }
 };
 struct j1Kicker : sc::state<j1Kicker, Kicker> {
@@ -91,10 +92,11 @@ struct j1Kicker : sc::state<j1Kicker, Kicker> {
   ~j1Kicker() override { std::cout << "Quitting junction j1\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) {
-    if (context<Kicker>().getGamemode() == 1) {
-      return transit<goToBall>();
+    switch (context<Kicker>().getGamemode()) {
+      case 0: return transit<finalStateKicker>();
+      case 1: return transit<goToBall>();
+      default: return transit<finalStateKicker>();
     }
-    return transit<finalStateKicker>();
   }
 };
 
@@ -102,13 +104,13 @@ struct finalStateKicker : sc::state<finalStateKicker, Kicker> {
  public:
   using reactions = sc::custom_reaction<transitionKicker>;
 
-  explicit finalStateKicker(my_context ctx) : my_base(ctx) { std::cout << "Entering kicker final state\n"; }
+  explicit finalStateKicker(my_context ctx) : my_base(ctx) {
+    std::cout << "Entering kicker final state\n";
+  }
 
   ~finalStateKicker() override { std::cout << "Finishing kicker machine\n"; }
 
-  sc::result react(const transitionKicker& /*unused*/) { 
-    return terminate();
-  }
+  sc::result react(const transitionKicker& /*unused*/) { return terminate(); }
 };
 
 struct goToBall : sc::state<goToBall, Kicker> {
@@ -130,11 +132,11 @@ struct j2Kicker : sc::state<j2Kicker, Kicker> {
   ~j2Kicker() override { std::cout << "Quitting junction j2Kicker\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) {
-    if (context<Kicker>().getKickable() == 1) {
-      return transit<shoot>();
+    switch (context<Kicker>().getKickable()) {
+      case 0: kickerStm::doMove(/*ball=*/0.0); return transit<j4Kicker>();
+      case 1: return transit<shoot>();
+      default: kickerStm::doMove(/*ball=*/0.0); return transit<j4Kicker>();
     }
-    kickerStm::doMove(/*ball=*/0.0);
-    return transit<j4Kicker>();
   }
 };
 
@@ -159,11 +161,11 @@ struct j3Kicker : sc::state<j3Kicker, Kicker> {
   ~j3Kicker() override { std::cout << "Quitting junction j3Kicker\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) {
-    if (context<Kicker>().getCanShoot()) {
-      kickerStm::doShoot();
-      return transit<j4Kicker>();
+    switch (static_cast<int>(context<Kicker>().getCanShoot())) {
+      case 0: return transit<j4Kicker>();
+      case 1: kickerStm::doShoot(); return transit<dribble>();
+      default: return transit<j4Kicker>();
     }
-    return transit<dribble>();
   }
 };
 

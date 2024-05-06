@@ -91,10 +91,11 @@ struct updateWorldModelGoalie : sc::state<updateWorldModelGoalie, Goalie> {
   ~updateWorldModelGoalie() override { std::cout << "World model updated\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (!context<Goalie>().getUpdatedWorldModel()) {
-      return transit<updateWorldModelGoalie>();
+    switch (static_cast<int>(context<Goalie>().getUpdatedWorldModel())) {
+      case 0: return transit<updateWorldModelGoalie>();
+      case 1: return transit<j1Goalie>();
+      default: return transit<updateWorldModelGoalie>();
     }
-    return transit<j1Goalie>();
   }
 };
 
@@ -106,10 +107,11 @@ struct j1Goalie : sc::state<j1Goalie, Goalie> {
   ~j1Goalie() override { std::cout << "Quitting junction j1Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getGamemode() == 1) {
-      return transit<doCatch>();
+    switch (context<Goalie>().getGamemode()) {
+      case 0: return transit<finalStateGoalie>();
+      case 1: return transit<doCatch>();
+      default: return transit<finalStateGoalie>();
     }
-    return transit<finalStateGoalie>();
   }
 };
 
@@ -147,11 +149,13 @@ struct j2Goalie : sc::state<j2Goalie, Goalie> {
   ~j2Goalie() override { std::cout << "Quitting junction j2Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getCatchable() && context<Goalie>().getInsideGoalieArea()) {
-      goalieStm::doCatch();
-      return transit<j6Goalie>();
+    int j2Condition = static_cast<int>(context<Goalie>().getCatchable()
+                                       && context<Goalie>().getInsideGoalieArea());
+    switch (j2Condition) {
+      case 0: return transit<clearBall>();
+      case 1: goalieStm::doCatch(); return transit<j6Goalie>();
+      default: return transit<clearBall>();
     }
-    return transit<clearBall>();
   }
 };
 
@@ -174,11 +178,11 @@ struct j3Goalie : sc::state<j3Goalie, Goalie> {
   ~j3Goalie() override { std::cout << "Quitting junction j3Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getKickable()) {
-      goalieStm::doClearBall();
-      return transit<j6Goalie>();
+    switch (static_cast<int>(context<Goalie>().getKickable())) {
+      case 0: return transit<doTackle>();
+      case 1: goalieStm::doClearBall(); return transit<j6Goalie>();
+      default: return transit<doTackle>();
     }
-    return transit<doTackle>();
   }
 };
 
@@ -204,11 +208,11 @@ struct j4Goalie : sc::state<j4Goalie, Goalie> {
   ~j4Goalie() override { std::cout << "Quitting junction j4Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getTacklePossible()) {
-      goalieStm::doTackle();
-      return transit<j6Goalie>();
+    switch (static_cast<int>(context<Goalie>().getTacklePossible())) {
+      case 0: return transit<bodyIntercept>();
+      case 1: goalieStm::doTackle(); return transit<j6Goalie>();
+      default: return transit<bodyIntercept>();
     }
-    return transit<bodyIntercept>();
   }
 };
 
@@ -236,15 +240,11 @@ struct j5Goalie : sc::state<j5Goalie, Goalie> {
   ~j5Goalie() override { std::cout << "Quitting junction j5Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getBodyInterceptAct()) {
-      goalieStm::doBodyIntercept();
+    switch (static_cast<int>(context<Goalie>().getBodyInterceptAct())) {
+      case 0: goalieStm::doMove(context<Goalie>().getBlockPoint()); return transit<j6Goalie>();
+      case 1: goalieStm::doBodyIntercept(); return transit<j6Goalie>();
+      default: return transit<j6Goalie>();
     }
-
-    if (!context<Goalie>().getBodyInterceptAct()) {
-      goalieStm::doMove(context<Goalie>().getBlockPoint());
-    }
-
-    return transit<j6Goalie>();
   }
 };
 
