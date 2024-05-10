@@ -23,6 +23,7 @@ struct goToBall;
 struct shoot;
 struct dribble;
 struct finalStateKicker;
+struct undefinedStateKicker;
 
 struct j1Kicker;
 struct j2Kicker;
@@ -80,7 +81,7 @@ struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
     switch (static_cast<int>(context<Kicker>().getUpdatedWorldModel())) {
       case 0: return transit<updateWorldModelKicker>();
       case 1: return transit<j1Kicker>();
-      default: return transit<updateWorldModelKicker>();
+      default: return transit<undefinedStateKicker>();
     }
   }
 };
@@ -95,7 +96,7 @@ struct j1Kicker : sc::state<j1Kicker, Kicker> {
     switch (context<Kicker>().getGamemode()) {
       case 0: return transit<finalStateKicker>();
       case 1: return transit<goToBall>();
-      default: return transit<finalStateKicker>();
+      default: return transit<undefinedStateKicker>();
     }
   }
 };
@@ -135,7 +136,7 @@ struct j2Kicker : sc::state<j2Kicker, Kicker> {
     switch (context<Kicker>().getKickable()) {
       case 0: kickerStm::doMove(/*ball=*/0.0); return transit<j4Kicker>();
       case 1: return transit<shoot>();
-      default: kickerStm::doMove(/*ball=*/0.0); return transit<j4Kicker>();
+      default: return transit<undefinedStateKicker>();
     }
   }
 };
@@ -164,7 +165,7 @@ struct j3Kicker : sc::state<j3Kicker, Kicker> {
     switch (static_cast<int>(context<Kicker>().getCanShoot())) {
       case 0: return transit<j4Kicker>();
       case 1: kickerStm::doShoot(); return transit<dribble>();
-      default: return transit<j4Kicker>();
+      default: return transit<undefinedStateKicker>();
     }
   }
 };
@@ -190,4 +191,16 @@ struct j4Kicker : sc::state<j4Kicker, Kicker> {
   ~j4Kicker() override { std::cout << "Quitting junction j4Kicker\n"; }
 
   sc::result react(const transitionKicker& /*unused*/) { return transit<updateWorldModelKicker>(); }
+};
+
+struct undefinedStateKicker : sc::state<undefinedStateKicker, Kicker> {
+ public:
+  using reactions = sc::custom_reaction<transitionKicker>;
+  explicit undefinedStateKicker(my_context ctx) : my_base(ctx) {
+    std::cout << "Deadlock detected\n";
+  }
+
+  ~undefinedStateKicker() override = default;
+
+  sc::result react(const transitionKicker& /*unused*/) { return transit<undefinedStateKicker>(); }
 };

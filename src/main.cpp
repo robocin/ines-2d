@@ -1,5 +1,5 @@
 #include "machines/goalie/goalie_stm.h"
-// #include "machines/kicker/kicker_stm.h"
+#include "machines/kicker/kicker_stm.h"
 
 #include <thread>
 #include <unistd.h>
