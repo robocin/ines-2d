@@ -85,8 +85,6 @@ CheckOptions:
     value: "^(const_)?([a-zA-Z0-9_]*)(_t|_?type|_?iterator|_?pointer|_?reference)$"
   - key: readability-identifier-naming.ClassConstantCase
     value: camelBack
-  - key: readability-identifier-naming.ClassConstantPrefix
-    value: k
   - key: readability-identifier-naming.ClassMemberCase
     value: camelBack
   - key: readability-identifier-naming.ClassMethodCase
@@ -109,8 +107,6 @@ CheckOptions:
   # * global:
   - key: readability-identifier-naming.GlobalConstantCase
     value: camelBack
-  - key: readability-identifier-naming.GlobalConstantPrefix
-    value: k
   - key: readability-identifier-naming.GlobalConstantIgnoredRegexp
     value: "^[a-z][a-zA-Z0-9]*_v$"
 
@@ -123,8 +119,6 @@ CheckOptions:
   # constexpr variable:
   - key: readability-identifier-naming.ConstexprVariableCase
     value: camelBack
-  - key: readability-identifier-naming.ConstexprVariablePrefix
-    value: k
 
   # * macro:
   - key: readability-identifier-naming.MacroDefinitionCase
@@ -135,8 +129,6 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.ConstantMemberCase
     value: camelBack
-  - key: readability-identifier-naming.ConstantMemberPrefix
-    value: k
 
   # * method:
   - key: readability-identifier-naming.MethodCase

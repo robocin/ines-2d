@@ -23,6 +23,7 @@ struct clearBall;
 struct doTackle;
 struct bodyIntercept;
 struct finalStateGoalie;
+struct undefinedStateGoalie;
 
 struct j1Goalie;
 struct j2Goalie;
@@ -35,6 +36,7 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
  public:
   Goalie() = default;
   ~Goalie() override = default;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   [[nodiscard]] int getWorldModel() const { return worldModel_; }
   int& getWorldModel() { return worldModel_; }
@@ -54,6 +56,8 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   double& getBlockPoint() { return blockPoint_; }
   [[nodiscard]] int getGamemode() const { return gamemode_; }
   int& getGamemode() { return gamemode_; }
+  [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
+  timePoint& getTimestamp() { return lastTimestamp_; }
 
  private:
   int gamemode_{2};
@@ -65,6 +69,7 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   bool tacklePossible_{true};
   bool bodyInterceptAct_{true};
   double blockPoint_{2.0};
+  timePoint lastTimestamp_{timePoint::min()};
 };
 
 struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
@@ -82,19 +87,35 @@ struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
 
 struct updateWorldModelGoalie : sc::state<updateWorldModelGoalie, Goalie> {
  public:
+  const long int iterationTime = 1000;
   using reactions = sc::custom_reaction<transitionGoalie>;
+  using clock = std::chrono::system_clock;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   explicit updateWorldModelGoalie(my_context ctx) : my_base(ctx) {
+    auto currTime = context<Goalie>().getTimestamp();
+
+    if (context<Goalie>().getTimestamp() != timePoint::min()) {
+      auto execTime
+          = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - currTime).count();
+      auto wait = iterationTime - execTime;
+      auto duration = std::chrono::milliseconds(wait);
+      while (clock::now() - currTime < duration) {
+      }
+    }
+
+    context<Goalie>().getTimestamp() = clock::now();
     std::cout << "Updating the world model!\n";
   }
 
   ~updateWorldModelGoalie() override { std::cout << "World model updated\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (!context<Goalie>().getUpdatedWorldModel()) {
-      return transit<updateWorldModelGoalie>();
+    switch (static_cast<int>(context<Goalie>().getUpdatedWorldModel())) {
+      case 0: return transit<updateWorldModelGoalie>();
+      case 1: return transit<j1Goalie>();
+      default: return transit<undefinedStateGoalie>();
     }
-    return transit<j1Goalie>();
   }
 };
 
@@ -106,10 +127,11 @@ struct j1Goalie : sc::state<j1Goalie, Goalie> {
   ~j1Goalie() override { std::cout << "Quitting junction j1Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getGamemode() == 1) {
-      return transit<doCatch>();
+    switch (context<Goalie>().getGamemode()) {
+      case 0: return transit<finalStateGoalie>();
+      case 1: return transit<doCatch>();
+      default: return transit<undefinedStateGoalie>();
     }
-    return transit<finalStateGoalie>();
   }
 };
 
@@ -147,11 +169,13 @@ struct j2Goalie : sc::state<j2Goalie, Goalie> {
   ~j2Goalie() override { std::cout << "Quitting junction j2Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getCatchable() && context<Goalie>().getInsideGoalieArea()) {
-      goalieStm::doCatch();
-      return transit<j6Goalie>();
+    int j2Condition = static_cast<int>(context<Goalie>().getCatchable()
+                                       && context<Goalie>().getInsideGoalieArea());
+    switch (j2Condition) {
+      case 0: return transit<clearBall>();
+      case 1: goalieStm::doCatch(); return transit<j6Goalie>();
+      default: return transit<undefinedStateGoalie>();
     }
-    return transit<clearBall>();
   }
 };
 
@@ -174,11 +198,11 @@ struct j3Goalie : sc::state<j3Goalie, Goalie> {
   ~j3Goalie() override { std::cout << "Quitting junction j3Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getKickable()) {
-      goalieStm::doClearBall();
-      return transit<j6Goalie>();
+    switch (static_cast<int>(context<Goalie>().getKickable())) {
+      case 0: return transit<doTackle>();
+      case 1: goalieStm::doClearBall(); return transit<j6Goalie>();
+      default: return transit<undefinedStateGoalie>();
     }
-    return transit<doTackle>();
   }
 };
 
@@ -204,11 +228,11 @@ struct j4Goalie : sc::state<j4Goalie, Goalie> {
   ~j4Goalie() override { std::cout << "Quitting junction j4Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getTacklePossible()) {
-      goalieStm::doTackle();
-      return transit<j6Goalie>();
+    switch (static_cast<int>(context<Goalie>().getTacklePossible())) {
+      case 0: return transit<bodyIntercept>();
+      case 1: goalieStm::doTackle(); return transit<j6Goalie>();
+      default: return transit<undefinedStateGoalie>();
     }
-    return transit<bodyIntercept>();
   }
 };
 
@@ -236,15 +260,11 @@ struct j5Goalie : sc::state<j5Goalie, Goalie> {
   ~j5Goalie() override { std::cout << "Quitting junction j5Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) {
-    if (context<Goalie>().getBodyInterceptAct()) {
-      goalieStm::doBodyIntercept();
+    switch (static_cast<int>(context<Goalie>().getBodyInterceptAct())) {
+      case 0: goalieStm::doMove(context<Goalie>().getBlockPoint()); return transit<j6Goalie>();
+      case 1: goalieStm::doBodyIntercept(); return transit<j6Goalie>();
+      default: return transit<undefinedStateGoalie>();
     }
-
-    if (!context<Goalie>().getBodyInterceptAct()) {
-      goalieStm::doMove(context<Goalie>().getBlockPoint());
-    }
-
-    return transit<j6Goalie>();
   }
 };
 
@@ -256,4 +276,18 @@ struct j6Goalie : sc::state<j6Goalie, Goalie> {
   ~j6Goalie() override { std::cout << "Quitting junction j6Goalie\n"; }
 
   sc::result react(const transitionGoalie& /*unused*/) { return transit<updateWorldModelGoalie>(); }
+};
+
+struct undefinedStateGoalie : sc::state<undefinedStateGoalie, Goalie> {
+  public:
+    using reactions = sc::custom_reaction<transitionGoalie>;
+    explicit undefinedStateGoalie(my_context ctx) : my_base(ctx) {
+      std::cout << "Deadlock detected\n";
+    }
+
+    ~undefinedStateGoalie() override = default;
+
+    sc::result react(const transitionGoalie& /*unused*/) {
+      return transit<undefinedStateGoalie>();
+    }
 };
