@@ -36,6 +36,7 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
  public:
   Goalie() = default;
   ~Goalie() override = default;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   [[nodiscard]] int getWorldModel() const { return worldModel_; }
   int& getWorldModel() { return worldModel_; }
@@ -55,6 +56,8 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   double& getBlockPoint() { return blockPoint_; }
   [[nodiscard]] int getGamemode() const { return gamemode_; }
   int& getGamemode() { return gamemode_; }
+  [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
+  timePoint& getTimestamp() { return lastTimestamp_; }
 
  private:
   int gamemode_{2};
@@ -66,6 +69,7 @@ struct Goalie : sc::state_machine<Goalie, initialStateGoalie> {
   bool tacklePossible_{true};
   bool bodyInterceptAct_{true};
   double blockPoint_{2.0};
+  timePoint lastTimestamp_{timePoint::min()};
 };
 
 struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
@@ -83,9 +87,24 @@ struct initialStateGoalie : sc::state<initialStateGoalie, Goalie> {
 
 struct updateWorldModelGoalie : sc::state<updateWorldModelGoalie, Goalie> {
  public:
+  const long int iterationTime = 1000;
   using reactions = sc::custom_reaction<transitionGoalie>;
+  using clock = std::chrono::system_clock;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   explicit updateWorldModelGoalie(my_context ctx) : my_base(ctx) {
+    auto currTime = context<Goalie>().getTimestamp();
+
+    if (context<Goalie>().getTimestamp() != timePoint::min()) {
+      auto execTime
+          = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - currTime).count();
+      auto wait = iterationTime - execTime;
+      auto duration = std::chrono::milliseconds(wait);
+      while (clock::now() - currTime < duration) {
+      }
+    }
+
+    context<Goalie>().getTimestamp() = clock::now();
     std::cout << "Updating the world model!\n";
   }
 

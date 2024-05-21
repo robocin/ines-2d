@@ -8,6 +8,8 @@
 #include <boost/statechart/state.hpp>
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/transition.hpp>
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <thread>
 #include <unistd.h>
@@ -34,6 +36,7 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
  public:
   Kicker() = default;
   ~Kicker() override = default;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   [[nodiscard]] int getWorldModel() const { return worldModel_; }
   int& getWorldModel() { return worldModel_; }
@@ -45,13 +48,16 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   bool& getUpdatedWorldModel() { return updatedWorldModel_; }
   [[nodiscard]] int getGamemode() const { return gamemode_; }
   int& getGamemode() { return gamemode_; }
+  [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
+  timePoint& getTimestamp() { return lastTimestamp_; }
 
  private:
-  int gamemode_{2};
+  int gamemode_{1};
   int worldModel_{1};
   int kickable_{1};
   bool canShoot_{true};
   bool updatedWorldModel_{true};
+  timePoint lastTimestamp_{timePoint::min()};
 };
 
 struct initialStateKicker : sc::state<initialStateKicker, Kicker> {
@@ -69,9 +75,24 @@ struct initialStateKicker : sc::state<initialStateKicker, Kicker> {
 
 struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
  public:
+  const long int iterationTime = 1000;
   using reactions = sc::custom_reaction<transitionKicker>;
+  using clock = std::chrono::system_clock;
+  using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
   explicit updateWorldModelKicker(my_context ctx) : my_base(ctx) {
+    auto currTime = context<Kicker>().getTimestamp();
+
+    if (context<Kicker>().getTimestamp() != timePoint::min()) {
+      auto execTime
+          = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - currTime).count();
+      auto wait = iterationTime - execTime;
+      auto duration = std::chrono::milliseconds(wait);
+      while (clock::now() - currTime < duration) {
+      }
+    }
+
+    context<Kicker>().getTimestamp() = clock::now();
     std::cout << "Updating the world model!\n";
   }
 
@@ -85,6 +106,7 @@ struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
     }
   }
 };
+
 struct j1Kicker : sc::state<j1Kicker, Kicker> {
  public:
   using reactions = sc::custom_reaction<transitionKicker>;

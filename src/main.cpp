@@ -19,15 +19,15 @@ void triggerGoalie(Goalie& machine) {
 }
 
 int main() {
-  /*Kicker machineKicker;
+  Kicker machineKicker;
   machineKicker.initiate();
   std::thread triggerEventKicker(triggerKicker, std::ref(machineKicker));
-  triggerEventKicker.join();*/
+  triggerEventKicker.join();
 
-  Goalie machineGoalie;
+  /*Goalie machineGoalie;
   machineGoalie.initiate();
   std::thread triggerEventGoalie(triggerGoalie, std::ref(machineGoalie));
-  triggerEventGoalie.join();
+  triggerEventGoalie.join();*/
 
   return 0;
 }
