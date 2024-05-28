@@ -4,9 +4,28 @@
 #include <thread>
 #include <unistd.h>
 
+void writeOutput(){
+  std::cout << "Writing outputs\n";
+}
+
+void readInputs() {
+  std::cout << "Reading inputs\n";
+}
+
 void triggerKicker(Kicker& machine) {
   while(!machine.terminated()) {
-    machine.process_event(transitionKicker());
+    if(!machine.getExec()) {
+      machine.process_event(transitionKicker());
+    }
+
+    if(machine.getExec()) {
+      // write output
+      writeOutput();
+      // read input
+      readInputs();
+      // exec finished
+      machine.getExec() = false;
+    }
   }
   std::cout << "Terminate kicker machine\n";
 }

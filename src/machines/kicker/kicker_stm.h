@@ -26,6 +26,7 @@ struct shoot;
 struct dribble;
 struct finalStateKicker;
 struct undefinedStateKicker;
+struct exec1;
 
 struct j1Kicker;
 struct j2Kicker;
@@ -46,6 +47,8 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   bool& getCanShoot() { return canShoot_; }
   [[nodiscard]] bool getUpdatedWorldModel() const { return updatedWorldModel_; }
   bool& getUpdatedWorldModel() { return updatedWorldModel_; }
+  [[nodiscard]] bool getExec() const { return exec_; }
+  bool& getExec() { return exec_; }
   [[nodiscard]] int getGamemode() const { return gamemode_; }
   int& getGamemode() { return gamemode_; }
   [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
@@ -56,7 +59,8 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   int worldModel_{1};
   int kickable_{1};
   bool canShoot_{true};
-  bool updatedWorldModel_{true};
+  bool updatedWorldModel_{false};
+  bool exec_{false};
   timePoint lastTimestamp_{timePoint::min()};
 };
 
@@ -100,10 +104,22 @@ struct updateWorldModelKicker : sc::state<updateWorldModelKicker, Kicker> {
 
   sc::result react(const transitionKicker& /*unused*/) {
     switch (static_cast<int>(context<Kicker>().getUpdatedWorldModel())) {
-      case 0: return transit<updateWorldModelKicker>();
+      case 0: context<Kicker>().getExec() = true; return transit<exec1>(); // return transit<updateWorldModelKicker>();
       case 1: return transit<j1Kicker>();
       default: return transit<undefinedStateKicker>();
     }
+  }
+};
+
+struct exec1 : sc::state<exec1, Kicker> {
+ public:
+  using reactions = sc::custom_reaction<transitionKicker>;
+  explicit exec1(my_context ctx) : my_base(ctx) { std::cout << "Entering junction exec1\n"; }
+
+  ~exec1() override { std::cout << "Quitting junction j1\n"; }
+
+  sc::result react(const transitionKicker& /*unused*/) {
+    return transit<updateWorldModelKicker>();
   }
 };
 
