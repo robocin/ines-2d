@@ -13,6 +13,7 @@
 #include <boost/statechart/transition.hpp>
 #include <chrono>
 #include <ctime>
+#include <random>
 #include <unistd.h>
 
 namespace sc = boost::statechart;
@@ -54,6 +55,42 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
   timePoint& getTimestamp() { return lastTimestamp_; }
 
+  timePoint waitCycleTime(timePoint time) {
+    const int iterationTime = 1000;
+    auto currTime = time;
+
+    if (time != timePoint::min()) {
+      auto execTime
+          = std::chrono::duration_cast<std::chrono::milliseconds>(sysClock::now() - currTime)
+                .count();
+      auto waitTime = iterationTime - execTime;
+      auto waitDuration = std::chrono::milliseconds(waitTime);
+      while (sysClock::now() - currTime < waitDuration) {
+      }
+    }
+
+    return sysClock::now();
+  }
+
+  void exec() {
+    std::cout << "Start Exec\n";
+    writeOutputs();
+    readInputs();
+    this->lastTimestamp_ = waitCycleTime(this->lastTimestamp_);
+  }
+
+  void writeOutputs() { std::cout << "Writing outputs\n"; }
+
+  void readInputs() {
+    std::cout << "Reading inputs\n";
+    std::random_device rng;
+    this->gamemode_ = static_cast<int>(rng() % 2);
+    this->worldModel_ = static_cast<int>(rng() % 2);
+    this->kickable_ = static_cast<int>(rng() % 2);
+    this->canShoot_ = static_cast<bool>(rng() % 2);
+    this->updatedWorldModel_ = static_cast<bool>(rng() % 2);
+  }
+
  private:
   int gamemode_{1};
   int worldModel_{1};
@@ -91,7 +128,7 @@ struct j1Kicker : sc::state<j1Kicker, Kicker> {
 struct finalStateKicker : sc::state<finalStateKicker, Kicker> {
  public:
   using reactions = sc::custom_reaction<transitionKicker>;
-  explicit finalStateKicker(my_context ctx) ;
+  explicit finalStateKicker(my_context ctx);
   ~finalStateKicker() override;
   sc::result react(const transitionKicker&);
 };

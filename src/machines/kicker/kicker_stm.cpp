@@ -2,26 +2,6 @@
 
 #include <boost/statechart/result.hpp>
 
-namespace {
-
-timePoint waitCycleTime(timePoint time) {
-  const int iterationTime = 1000;
-  auto currTime = time;
-
-  if (time != timePoint::min()) {
-    auto execTime
-        = std::chrono::duration_cast<std::chrono::milliseconds>(sysClock::now() - currTime).count();
-    auto waitTime = iterationTime - execTime;
-    auto waitDuration = std::chrono::milliseconds(waitTime);
-    while (sysClock::now() - currTime < waitDuration) {
-    }
-  }
-
-  return sysClock::now();
-}
-
-} // namespace
-
 initialStateKicker::initialStateKicker(my_context ctx) : my_base(ctx) {
   std::cout << "Update the kicker world model\n";
 }
@@ -35,7 +15,8 @@ sc::result initialStateKicker::react(const transitionKicker& /*unused*/) {
 /* ====================================================================================== */
 
 updateWorldModelKicker::updateWorldModelKicker(my_context ctx) : my_base(ctx) {
-    context<Kicker>().getTimestamp() = waitCycleTime(context<Kicker>().getTimestamp());
+  context<Kicker>().getTimestamp()
+      = context<Kicker>().waitCycleTime(context<Kicker>().getTimestamp());
   std::cout << "Updating the world model!\n";
 }
 
@@ -80,7 +61,7 @@ goToBall::goToBall(my_context ctx) : my_base(ctx) { std::cout << "Going to ball 
 goToBall::~goToBall() { std::cout << "Quitting go to ball\n"; }
 
 sc::result goToBall::react(const transitionKicker& /*unused*/) { return transit<j2Kicker>(); }
- 
+
 /* ====================================================================================== */
 
 j2Kicker::j2Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junction j2Kicker\n"; }
@@ -130,7 +111,7 @@ dribble::dribble(my_context ctx) : my_base(ctx) {
 dribble::~dribble() { std::cout << "Quitting dribble\n"; }
 
 sc::result dribble::react(const transitionKicker& /*unused*/) {
-  return transit<updateWorldModelKicker>();
+  return transit<j4Kicker>();
 }
 
 /* ====================================================================================== */
@@ -140,6 +121,7 @@ j4Kicker::j4Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junct
 j4Kicker::~j4Kicker() { std::cout << "Quitting junction j4Kicker\n"; }
 
 sc::result j4Kicker::react(const transitionKicker& /*unused*/) {
+  context<Kicker>().exec();
   return transit<updateWorldModelKicker>();
 }
 
