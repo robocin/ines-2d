@@ -75,8 +75,8 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   void exec() {
     std::cout << "Start Exec\n";
     writeOutputs();
-    readInputs();
     this->lastTimestamp_ = waitCycleTime(this->lastTimestamp_);
+    readInputs();
   }
 
   void writeOutputs() { std::cout << "Writing outputs\n"; }
