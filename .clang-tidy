@@ -25,19 +25,6 @@ WarningsAsErrors: >
   -readability-magic-numbers
 
 CheckOptions:
-  # bugprone-argument-comment:
-  - key: bugprone-argument-comment.CommentBoolLiterals
-    value: true
-  - key: bugprone-argument-comment.CommentIntegerLiterals
-    value: true
-  - key: bugprone-argument-comment.CommentFloatLiterals
-    value: true
-  - key: bugprone-argument-comment.CommentCharacterLiterals
-    value: true
-  - key: bugprone-argument-comment.CommentUserDefinedLiterals
-    value: true
-  - key: bugprone-argument-comment.CommentNullPtrs
-    value: true
   # bugprone-assert-side-effect:
   - key: bugprone-assert-side-effect.AssertMacros
     value: "assert"
