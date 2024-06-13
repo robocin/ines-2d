@@ -92,11 +92,11 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   }
 
  private:
-  int gamemode_{1};
-  int worldModel_{1};
-  int kickable_{1};
-  bool canShoot_{true};
-  bool updatedWorldModel_{true};
+  int gamemode_;
+  int worldModel_;
+  int kickable_;
+  bool canShoot_;
+  bool updatedWorldModel_;
   timePoint lastTimestamp_{timePoint::min()};
 };
 
