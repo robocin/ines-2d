@@ -36,22 +36,27 @@ struct j2Kicker;
 struct j3Kicker;
 struct j4Kicker;
 
+struct worldModel {
+  int gamemode;
+  bool canShoot;
+};
+
 struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
  public:
   Kicker() = default;
   ~Kicker() override = default;
   using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
-  [[nodiscard]] int getWorldModel() const { return worldModel_; }
-  int& getWorldModel() { return worldModel_; }
+  [[nodiscard]] worldModel getWorldModel() const { return worldModel_; }
+  worldModel& getWorldModel() { return worldModel_; }
   [[nodiscard]] int getKickable() const { return kickable_; }
   int& getKickable() { return kickable_; }
-  [[nodiscard]] bool getCanShoot() const { return canShoot_; }
-  bool& getCanShoot() { return canShoot_; }
+  [[nodiscard]] bool getCanShoot() const { return worldModel_.canShoot; }
+  bool& getCanShoot() { return worldModel_.canShoot; }
   [[nodiscard]] bool getUpdatedWorldModel() const { return updatedWorldModel_; }
   bool& getUpdatedWorldModel() { return updatedWorldModel_; }
-  [[nodiscard]] int getGamemode() const { return gamemode_; }
-  int& getGamemode() { return gamemode_; }
+  [[nodiscard]] int getGamemode() const { return worldModel_.gamemode; }
+  int& getGamemode() { return worldModel_.gamemode; }
   [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
   timePoint& getTimestamp() { return lastTimestamp_; }
 
@@ -84,19 +89,16 @@ struct Kicker : sc::state_machine<Kicker, initialStateKicker> {
   void readInputs() {
     std::cout << "Reading inputs\n";
     std::random_device rng;
-    this->gamemode_ = static_cast<int>(rng() % 2);
-    this->worldModel_ = static_cast<int>(rng() % 2);
+    this->worldModel_.gamemode = static_cast<int>(rng() % 2);
     this->kickable_ = static_cast<int>(rng() % 2);
-    this->canShoot_ = static_cast<bool>(rng() % 2);
+    this->worldModel_.canShoot = static_cast<bool>(rng() % 2);
     this->updatedWorldModel_ = static_cast<bool>(rng() % 2);
   }
 
  private:
-  int gamemode_{1};
-  int worldModel_{1};
-  int kickable_{1};
-  bool canShoot_{true};
-  bool updatedWorldModel_{true};
+  worldModel worldModel_;
+  int kickable_;
+  bool updatedWorldModel_;
   timePoint lastTimestamp_{timePoint::min()};
 };
 
