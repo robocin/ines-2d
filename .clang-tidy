@@ -66,8 +66,6 @@ CheckOptions:
     value: true
 
   # * class:
-  - key: readability-identifier-naming.ClassCase
-    value: CamelCase
   - key: readability-identifier-naming.ClassIgnoredRegexp
     value: "^(const_)?([a-zA-Z0-9_]*)(_t|_?type|_?iterator|_?pointer|_?reference)$"
   - key: readability-identifier-naming.ClassConstantCase
@@ -111,12 +109,6 @@ CheckOptions:
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
 
-  # * member:
-  - key: readability-identifier-naming.MemberCase
-    value: camelBack
-  - key: readability-identifier-naming.ConstantMemberCase
-    value: camelBack
-
   # * method:
   - key: readability-identifier-naming.MethodCase
     value: camelBack
@@ -128,20 +120,6 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.ConstantParameterCase
     value: camelBack
-
-  # * private:
-  - key: readability-identifier-naming.PrivateMemberSuffix
-    value: _
-
-  # * protected:
-  - key: readability-identifier-naming.ProtectedMemberSuffix
-    value: _
-
-  # * struct:
-  - key: readability-identifier-naming.StructCase
-    value: camelBack
-  - key: readability-identifier-naming.StructIgnoredRegexp
-    value: "^(const_)?([a-zA-Z0-9_]*)(_t|_?type|_?iterator|_?pointer|_?reference)$"
 
   # * template:
   - key: readability-identifier-naming.TemplateParameterCase

@@ -11,7 +11,7 @@ void readInputsKicker(KickerStm& machine) {
 
 void triggerKicker(KickerStm& machine) {
   while(!machine.terminated()) {
-    machine.process_event(TransitionKicker());
+    machine.process_event(Transition());
   }
   std::cout << "Terminate kicker machine\n";
 }

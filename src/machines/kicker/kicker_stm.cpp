@@ -2,57 +2,57 @@
 
 #include <boost/statechart/result.hpp>
 
-InitialStateKicker::InitialStateKicker(my_context ctx) : my_base(ctx) {
+InitialState::InitialState(my_context ctx) : my_base(ctx) {
   std::cout << "Update the kicker world model\n";
 }
 
-InitialStateKicker::~InitialStateKicker() { std::cout << "Kicker World model updated\n"; }
+InitialState::~InitialState() { std::cout << "Kicker World model updated\n"; }
 
-sc::result InitialStateKicker::react(const TransitionKicker& /*unused*/) {
-  return transit<SUpdateWorldModelKicker>();
+sc::result InitialState::react(const Transition& /*unused*/) {
+  return transit<SUpdateWorldModel>();
 }
 
 /* ====================================================================================== */
 
-SUpdateWorldModelKicker::SUpdateWorldModelKicker(my_context ctx) : my_base(ctx) {
+SUpdateWorldModel::SUpdateWorldModel(my_context ctx) : my_base(ctx) {
   context<KickerStm>().getTimestamp()
       = context<KickerStm>().waitCycleTime(context<KickerStm>().getTimestamp());
   std::cout << "Updating the world model!\n";
 }
 
-SUpdateWorldModelKicker::~SUpdateWorldModelKicker() { std::cout << "World model updated\n"; }
+SUpdateWorldModel::~SUpdateWorldModel() { std::cout << "World model updated\n"; }
 
-sc::result SUpdateWorldModelKicker::react(const TransitionKicker& /*unused*/) {
+sc::result SUpdateWorldModel::react(const Transition& /*unused*/) {
   switch (static_cast<int>(context<KickerStm>().getUpdatedWorldModel())) {
-    case 0: return transit<SUpdateWorldModelKicker>();
-    case 1: return transit<j1Kicker>();
-    default: return transit<UndefinedStateKicker>();
+    case 0: return transit<SUpdateWorldModel>();
+    case 1: return transit<J1>();
+    default: return transit<UndefinedState>();
   }
 }
 
 /* ====================================================================================== */
 
-j1Kicker::j1Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junction j1Kicker\n"; }
+J1::J1(my_context ctx) : my_base(ctx) { std::cout << "Entering junction J1\n"; }
 
-j1Kicker::~j1Kicker() { std::cout << "Quitting junction j1\n"; }
+J1::~J1() { std::cout << "Quitting junction j1\n"; }
 
-sc::result j1Kicker::react(const TransitionKicker& /*unused*/) {
+sc::result J1::react(const Transition& /*unused*/) {
   switch (context<KickerStm>().getGamemode()) {
-    case 0: return transit<FinalStateKicker>();
+    case 0: return transit<FinalState>();
     case 1: return transit<SGoToBall>();
-    default: return transit<UndefinedStateKicker>();
+    default: return transit<UndefinedState>();
   }
 }
 
 /* ====================================================================================== */
 
-FinalStateKicker::FinalStateKicker(my_context ctx) : my_base(ctx) {
+FinalState::FinalState(my_context ctx) : my_base(ctx) {
   std::cout << "Entering kicker final state\n";
 }
 
-FinalStateKicker::~FinalStateKicker() { std::cout << "Finishing kicker machine\n"; }
+FinalState::~FinalState() { std::cout << "Finishing kicker machine\n"; }
 
-sc::result FinalStateKicker::react(const TransitionKicker& /*unused*/) { return terminate(); }
+sc::result FinalState::react(const Transition& /*unused*/) { return terminate(); }
 
 /* ====================================================================================== */
 
@@ -60,19 +60,19 @@ SGoToBall::SGoToBall(my_context ctx) : my_base(ctx) { std::cout << "Going to bal
 
 SGoToBall::~SGoToBall() { std::cout << "Quitting go to ball\n"; }
 
-sc::result SGoToBall::react(const TransitionKicker& /*unused*/) { return transit<j2Kicker>(); }
+sc::result SGoToBall::react(const Transition& /*unused*/) { return transit<J2>(); }
 
 /* ====================================================================================== */
 
-j2Kicker::j2Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junction j2Kicker\n"; }
+J2::J2(my_context ctx) : my_base(ctx) { std::cout << "Entering junction J2\n"; }
 
-j2Kicker::~j2Kicker() { std::cout << "Quitting junction j2Kicker\n"; }
+J2::~J2() { std::cout << "Quitting junction J2\n"; }
 
-sc::result j2Kicker::react(const TransitionKicker& /*unused*/) {
+sc::result J2::react(const Transition& /*unused*/) {
   switch (context<KickerStm>().getKickable()) {
-    case 0: kickerStm::doMove(0.0); return transit<j4Kicker>();
+    case 0: kickerStm::doMove(0.0); return transit<J4>();
     case 1: return transit<SShoot>();
-    default: return transit<UndefinedStateKicker>();
+    default: return transit<UndefinedState>();
   }
 }
 
@@ -85,19 +85,19 @@ SShoot::SShoot(my_context ctx) : my_base(ctx) {
 
 SShoot::~SShoot() { std::cout << "Quitting shoot\n"; }
 
-sc::result SShoot::react(const TransitionKicker& /*unused*/) { return transit<j3Kicker>(); }
+sc::result SShoot::react(const Transition& /*unused*/) { return transit<J3>(); }
 
 /* ====================================================================================== */
 
-j3Kicker::j3Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junction j3Kicker\n"; }
+J3::J3(my_context ctx) : my_base(ctx) { std::cout << "Entering junction J3\n"; }
 
-j3Kicker::~j3Kicker() { std::cout << "Quitting j3Kicker\n"; }
+J3::~J3() { std::cout << "Quitting J3\n"; }
 
-sc::result j3Kicker::react(const TransitionKicker& /*unused*/) {
+sc::result J3::react(const Transition& /*unused*/) {
   switch (static_cast<int>(context<KickerStm>().getCanShoot())) {
-    case 0: return transit<j4Kicker>();
+    case 0: return transit<J4>();
     case 1: kickerStm::doShoot(); return transit<SDribble>();
-    default: return transit<UndefinedStateKicker>();
+    default: return transit<UndefinedState>();
   }
 }
 
@@ -110,31 +110,31 @@ SDribble::SDribble(my_context ctx) : my_base(ctx) {
 
 SDribble::~SDribble() { std::cout << "Quitting dribble\n"; }
 
-sc::result SDribble::react(const TransitionKicker& /*unused*/) {
-  return transit<j4Kicker>();
+sc::result SDribble::react(const Transition& /*unused*/) {
+  return transit<J4>();
 }
 
 /* ====================================================================================== */
 
-j4Kicker::j4Kicker(my_context ctx) : my_base(ctx) { std::cout << "Entering junction j4Kicker\n"; }
+J4::J4(my_context ctx) : my_base(ctx) { std::cout << "Entering junction J4\n"; }
 
-j4Kicker::~j4Kicker() { std::cout << "Quitting junction j4Kicker\n"; }
+J4::~J4() { std::cout << "Quitting junction J4\n"; }
 
-sc::result j4Kicker::react(const TransitionKicker& /*unused*/) {
+sc::result J4::react(const Transition& /*unused*/) {
   context<KickerStm>().exec();
-  return transit<SUpdateWorldModelKicker>();
+  return transit<SUpdateWorldModel>();
 }
 
 /* ====================================================================================== */
 
-UndefinedStateKicker::UndefinedStateKicker(my_context ctx) : my_base(ctx) {
+UndefinedState::UndefinedState(my_context ctx) : my_base(ctx) {
   std::cout << "Deadlock detected\n";
 }
 
-UndefinedStateKicker::~UndefinedStateKicker() = default;
+UndefinedState::~UndefinedState() = default;
 
-sc::result UndefinedStateKicker::react(const TransitionKicker& /*unused*/) {
-  return transit<UndefinedStateKicker>();
+sc::result UndefinedState::react(const Transition& /*unused*/) {
+  return transit<UndefinedState>();
 }
 
 /* ====================================================================================== */

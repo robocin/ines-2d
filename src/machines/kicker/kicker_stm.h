@@ -18,45 +18,45 @@
 
 namespace sc = boost::statechart;
 
-struct TransitionKicker : sc::event<TransitionKicker> {};
+struct Transition : sc::event<Transition> {};
 using sysClock = std::chrono::system_clock;
 using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 struct Kicker;
-struct InitialStateKicker;
-struct SUpdateWorldModelKicker;
+struct InitialState;
+struct SUpdateWorldModel;
 struct SGoToBall;
 struct SShoot;
 struct SDribble;
-struct FinalStateKicker;
-struct UndefinedStateKicker;
+struct FinalState;
+struct UndefinedState;
 
-struct j1Kicker;
-struct j2Kicker;
-struct j3Kicker;
-struct j4Kicker;
+struct J1;
+struct J2;
+struct J3;
+struct J4;
 
 struct worldModel {
   int gameMode;
   bool canShoot;
 };
 
-struct KickerStm : sc::state_machine<KickerStm, InitialStateKicker> {
+struct KickerStm : sc::state_machine<KickerStm, InitialState> {
  public:
   KickerStm() = default;
   ~KickerStm() override = default;
   using timePoint = std::chrono::time_point<std::chrono::system_clock>;
 
-  [[nodiscard]] worldModel getWorldModel() const { return WorldModel; }
-  worldModel& getWorldModel() { return WorldModel; }
+  [[nodiscard]] worldModel getWorldModel() const { return wm; }
+  worldModel& getWorldModel() { return wm; }
   [[nodiscard]] int getKickable() const { return isKickable; }
   int& getKickable() { return isKickable; }
-  [[nodiscard]] bool getCanShoot() const { return WorldModel.canShoot; }
-  bool& getCanShoot() { return WorldModel.canShoot; }
+  [[nodiscard]] bool getCanShoot() const { return wm.canShoot; }
+  bool& getCanShoot() { return wm.canShoot; }
   [[nodiscard]] bool getUpdatedWorldModel() const { return UpdateWorldModel; }
   bool& getUpdatedWorldModel() { return UpdateWorldModel; }
-  [[nodiscard]] int getGamemode() const { return WorldModel.gameMode; }
-  int& getGamemode() { return WorldModel.gameMode; }
+  [[nodiscard]] int getGamemode() const { return wm.gameMode; }
+  int& getGamemode() { return wm.gameMode; }
   [[nodiscard]] timePoint getTimestamp() const { return lastTimestamp_; }
   timePoint& getTimestamp() { return lastTimestamp_; }
 
@@ -89,104 +89,104 @@ struct KickerStm : sc::state_machine<KickerStm, InitialStateKicker> {
   void readInputs() {
     std::cout << "Reading inputs\n";
     std::random_device rng;
-    this->WorldModel.gameMode = static_cast<int>(rng() % 2);
+    this->wm.gameMode = static_cast<int>(rng() % 2);
     this->isKickable = static_cast<int>(rng() % 2);
-    this->WorldModel.canShoot = static_cast<bool>(rng() % 2);
+    this->wm.canShoot = static_cast<bool>(rng() % 2);
     this->UpdateWorldModel = static_cast<bool>(rng() % 2);
   }
 
  private:
-  worldModel WorldModel;
+  worldModel wm;
   int isKickable;
   bool UpdateWorldModel;
   timePoint lastTimestamp_{timePoint::min()};
 };
 
-struct InitialStateKicker : sc::state<InitialStateKicker, KickerStm> {
+struct InitialState : sc::state<InitialState, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit InitialStateKicker(my_context ctx);
-  ~InitialStateKicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit InitialState(my_context ctx);
+  ~InitialState() override;
+  sc::result react(const Transition&);
 };
 
-struct SUpdateWorldModelKicker : sc::state<SUpdateWorldModelKicker, KickerStm> {
+struct SUpdateWorldModel : sc::state<SUpdateWorldModel, KickerStm> {
  public:
   const int iterationTime = 1000;
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit SUpdateWorldModelKicker(my_context ctx);
-  ~SUpdateWorldModelKicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit SUpdateWorldModel(my_context ctx);
+  ~SUpdateWorldModel() override;
+  sc::result react(const Transition&);
 };
 
-struct j1Kicker : sc::state<j1Kicker, KickerStm> {
+struct J1 : sc::state<J1, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit j1Kicker(my_context ctx);
-  ~j1Kicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit J1(my_context ctx);
+  ~J1() override;
+  sc::result react(const Transition&);
 };
 
-struct FinalStateKicker : sc::state<FinalStateKicker, KickerStm> {
+struct FinalState : sc::state<FinalState, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit FinalStateKicker(my_context ctx);
-  ~FinalStateKicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit FinalState(my_context ctx);
+  ~FinalState() override;
+  sc::result react(const Transition&);
 };
 
 struct SGoToBall : sc::state<SGoToBall, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
+  using reactions = sc::custom_reaction<Transition>;
   explicit SGoToBall(my_context ctx);
   ~SGoToBall() override;
-  sc::result react(const TransitionKicker&);
+  sc::result react(const Transition&);
 };
 
-struct j2Kicker : sc::state<j2Kicker, KickerStm> {
+struct J2 : sc::state<J2, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit j2Kicker(my_context ctx);
-  ~j2Kicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit J2(my_context ctx);
+  ~J2() override;
+  sc::result react(const Transition&);
 };
 
 struct SShoot : sc::state<SShoot, KickerStm> {
-  using reactions = sc::custom_reaction<TransitionKicker>;
+  using reactions = sc::custom_reaction<Transition>;
   explicit SShoot(my_context ctx);
   ~SShoot() override;
-  sc::result react(const TransitionKicker&);
+  sc::result react(const Transition&);
 };
 
-struct j3Kicker : sc::state<j3Kicker, KickerStm> {
+struct J3 : sc::state<J3, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit j3Kicker(my_context ctx);
-  ~j3Kicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit J3(my_context ctx);
+  ~J3() override;
+  sc::result react(const Transition&);
 };
 
 struct SDribble : sc::state<SDribble, KickerStm> {
-  using reactions = sc::custom_reaction<TransitionKicker>;
+  using reactions = sc::custom_reaction<Transition>;
   explicit SDribble(my_context ctx);
   ~SDribble() override;
-  sc::result react(const TransitionKicker&);
+  sc::result react(const Transition&);
 };
 
-struct j4Kicker : sc::state<j4Kicker, KickerStm> {
+struct J4 : sc::state<J4, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit j4Kicker(my_context ctx);
-  ~j4Kicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit J4(my_context ctx);
+  ~J4() override;
+  sc::result react(const Transition&);
 };
 
-struct UndefinedStateKicker : sc::state<UndefinedStateKicker, KickerStm> {
+struct UndefinedState : sc::state<UndefinedState, KickerStm> {
  public:
-  using reactions = sc::custom_reaction<TransitionKicker>;
-  explicit UndefinedStateKicker(my_context ctx);
-  ~UndefinedStateKicker() override;
-  sc::result react(const TransitionKicker&);
+  using reactions = sc::custom_reaction<Transition>;
+  explicit UndefinedState(my_context ctx);
+  ~UndefinedState() override;
+  sc::result react(const Transition&);
 };
 
 #endif
