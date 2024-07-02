@@ -95,8 +95,8 @@ J3::~J3() { std::cout << "Quitting J3\n"; }
 
 sc::result J3::react(const Transition& /*unused*/) {
   switch (static_cast<int>(context<KickerStm>().getCanShoot())) {
-    case 0: return transit<J4>();
-    case 1: kickerStm::doShoot(); return transit<SDribble>();
+    case 0: return transit<SDribble>();
+    case 1: kickerStm::doShoot(); return transit<J4>();
     default: return transit<UndefinedState>();
   }
 }
