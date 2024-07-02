@@ -56,7 +56,10 @@ sc::result FinalState::react(const Transition& /*unused*/) { return terminate();
 
 /* ====================================================================================== */
 
-SGoToBall::SGoToBall(my_context ctx) : my_base(ctx) { std::cout << "Going to ball position!\n"; }
+SGoToBall::SGoToBall(my_context ctx) : my_base(ctx) { 
+  context<KickerStm>().getKickable() = kickerStm::isKickable();
+  std::cout << "Going to ball position!\n";
+}
 
 SGoToBall::~SGoToBall() { std::cout << "Quitting go to ball\n"; }
 
@@ -69,7 +72,7 @@ J2::J2(my_context ctx) : my_base(ctx) { std::cout << "Entering junction J2\n"; }
 J2::~J2() { std::cout << "Quitting junction J2\n"; }
 
 sc::result J2::react(const Transition& /*unused*/) {
-  switch (context<KickerStm>().getKickable()) {
+  switch (static_cast<int>(context<KickerStm>().getKickable())) {
     case 0: kickerStm::doMove(0.0); return transit<J4>();
     case 1: return transit<SShoot>();
     default: return transit<UndefinedState>();
