@@ -4,14 +4,14 @@
 #include <thread>
 #include <unistd.h>
 
-void readInputsKicker(Kicker& machine) {
+void readInputsKicker(KickerStm& machine) {
   std::cout << "Reading inputs\n";
   machine.readInputs();
 }
 
-void triggerKicker(Kicker& machine) {
+void triggerKicker(KickerStm& machine) {
   while(!machine.terminated()) {
-    machine.process_event(transitionKicker());
+    machine.process_event(TransitionKicker());
   }
   std::cout << "Terminate kicker machine\n";
 }
@@ -24,7 +24,7 @@ void triggerGoalie(Goalie& machine) {
 }
 
 int main() {
-  Kicker machineKicker;
+  KickerStm machineKicker;
   readInputsKicker(machineKicker);
   machineKicker.initiate();
   std::thread triggerEventKicker(triggerKicker, std::ref(machineKicker));
