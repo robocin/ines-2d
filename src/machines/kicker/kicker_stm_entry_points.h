@@ -1,7 +1,7 @@
 #include <iostream>
 
 namespace kickerStm {
-inline bool canShootToGoal() {
+inline bool canShootToGoal(int worldmodel) {
   std::cout << "Checks if the kicker can shoot to goal\n";
   return true;
 }

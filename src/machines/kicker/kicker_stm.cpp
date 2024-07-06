@@ -82,7 +82,7 @@ sc::result J2::react(const Transition& /*unused*/) {
 
 SShoot::SShoot(my_context ctx) : my_base(ctx) {
   std::cout << "Entering shoot!\n";
-  context<KickerStm>().getCanShoot() = kickerStm::canShootToGoal();
+  context<KickerStm>().getCanShoot() = kickerStm::canShootToGoal(0);
 }
 
 SShoot::~SShoot() { std::cout << "Quitting shoot\n"; }
