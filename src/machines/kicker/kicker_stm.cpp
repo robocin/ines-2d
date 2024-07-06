@@ -57,7 +57,6 @@ sc::result FinalState::react(const Transition& /*unused*/) { return terminate();
 /* ====================================================================================== */
 
 SGoToBall::SGoToBall(my_context ctx) : my_base(ctx) { 
-  context<KickerStm>().getKickable() = kickerStm::isKickable();
   std::cout << "Going to ball position!\n";
 }
 

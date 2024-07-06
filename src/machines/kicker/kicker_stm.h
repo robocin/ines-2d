@@ -39,6 +39,7 @@ struct J4;
 struct worldModel {
   int gameMode;
   bool canShoot;
+  bool isKickable;
 };
 
 struct KickerStm : sc::state_machine<KickerStm, InitialState> {
@@ -49,8 +50,8 @@ struct KickerStm : sc::state_machine<KickerStm, InitialState> {
 
   [[nodiscard]] worldModel getWorldModel() const { return wm; }
   worldModel& getWorldModel() { return wm; }
-  [[nodiscard]] bool getKickable() const { return isKickable; }
-  bool& getKickable() { return isKickable; }
+  [[nodiscard]] bool getKickable() const { return wm.isKickable; }
+  bool& getKickable() { return wm.isKickable; }
   [[nodiscard]] bool getCanShoot() const { return wm.canShoot; }
   bool& getCanShoot() { return wm.canShoot; }
   [[nodiscard]] bool getUpdatedWorldModel() const { return UpdateWorldModel; }
@@ -90,14 +91,13 @@ struct KickerStm : sc::state_machine<KickerStm, InitialState> {
     std::cout << "Reading inputs\n";
     std::random_device rng;
     this->wm.gameMode = static_cast<int>(rng() % 2);
-    this->isKickable = static_cast<bool>(rng() % 2);
+    this->wm.isKickable = static_cast<bool>(rng() % 2);
     this->wm.canShoot = static_cast<bool>(rng() % 2);
     this->UpdateWorldModel = static_cast<bool>(rng() % 2);
   }
 
  private:
   worldModel wm;
-  bool isKickable;
   bool UpdateWorldModel;
   timePoint lastTimestamp_{timePoint::min()};
 };
